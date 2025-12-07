@@ -1,0 +1,56 @@
+services:
+  # 1. The PHP Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: school_finance_app
+    volumes:
+      - ./:/var/www/html
+    environment:
+      # Connects to the 'database' service defined below
+      DATABASE_URL: postgresql://app_user:app_password@database:5432/school_finance_db?serverVersion=15&charset=utf8
+      # Connects to the 'messenger' service defined below
+      MESSENGER_TRANSPORT_DSN: amqp://guest:guest@messenger:5672/%2f/messages
+    depends_on:
+      - database
+      - messenger
+
+  # 2. The Web Server (Nginx)
+  web:
+    image: nginx:alpine
+    container_name: school_finance_web
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
+
+  # 3. The Database (PostgreSQL)
+  database:
+    image: postgres:15-alpine
+    container_name: school_finance_db
+    environment:
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: app_password
+      POSTGRES_DB: school_finance_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  # 4. The Message Broker (RabbitMQ)
+  messenger:
+    image: rabbitmq:3-management-alpine
+    container_name: school_finance_messenger
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - messenger_data:/var/lib/rabbitmq
+
+volumes:
+  db_data:
+  messenger_data:
