@@ -18,12 +18,23 @@ doctrine:
             Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
         auto_mapping: true
         mappings:
-            App:
-                type: attribute
+            # 1. Shared Kernel
+            Shared:
                 is_bundle: false
-                dir: '%kernel.project_dir%/src/Entity'
-                prefix: 'App\Entity'
-                alias: App
+                dir: '%kernel.project_dir%/src/Shared/Domain/ValueObject'
+                prefix: 'App\Shared\Domain\ValueObject'
+                alias: Shared
+
+            # 2. Tuition Context
+            Tuition:
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Tuition/Domain/Model'
+                prefix: 'App\Tuition\Domain\Model'
+                alias: Tuition
+            
+            # (Bookstore and Payment can wait if you haven't created the files yet, 
+            # but keep them if the folders exist)
+            
         controller_resolver:
             auto_mapping: false
 
